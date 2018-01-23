@@ -1,7 +1,46 @@
 <!DOCTYPE html>
-
 <?php
+session_start();
 include("dbConnect.php");
+
+if (isset($_POST['submit'])){
+	
+	/*var_dump([$_POST['Name'],
+	$_POST['Password'],
+	$_POST['Email_address'],
+	$_POST['Name'],
+	$_POST['ConfirmPassword']
+	$_POST['Username']]);*/
+	
+	try {
+		//insert into database with a prepared statement 
+		$stmt = $conn->prepare('INSERT INTO Users (Password, Email_Address, Name, ConfirmPassword, Username) VALUES (?, ?, ?, ?)');
+		$stmt->execute(array(
+		$_POST['Password'],
+		$_POST['Email_address'],
+		$_POST['Name'],
+		$_POST['ConfirmPassword'],
+		$_POST['Username']
+		));
+		//$UserID = $conn->lastInterId('UserID');
+		ob_start();
+		//redirect to index page 
+		
+		echo'<script>window.location = "index.php?action=joined";</script>';
+		//header("Location: index.php?action=joined");
+		exit;
+		
+		//else catch the exception and show the error. 
+	} catch (PDOException $e) {
+		$error[] = $e->getMessage();
+	}
+	
+	//if action is joined show sucess
+	if(isset($_GET['action']) && $_GET['action'] == 'joined'){
+		echo "<h2>Registration successful</h2>";
+	}
+}
+
   ?>
 
 <html lang="en">
@@ -61,7 +100,7 @@ include("dbConnect.php");
 </body>
 </html>
 
-<!DOCTYPE html>
+
 <html lang="en">
     <head> 
 		<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -84,60 +123,60 @@ include("dbConnect.php");
 			<div class="row main">
 				<div class="main-login main-center">
 				<h2>Reigster User Account</h2>
-					<form class="" method="post" action="#">
+					<form class="" method="post" action="register.php">
 						
 						<div class="form-group">
-							<label for="name" class="cols-sm-2 control-label">Your Name</label>
+							<label for="Name" class="cols-sm-2 control-label">Your Name</label>
 							<div class="cols-sm-10">
 								<div class="input-group">
 									<span class="input-group-addon"><i class="fa fa-user fa" aria-hidden="true"></i></span>
-									<input type="text" class="form-control" name="name" id="name"  placeholder="Enter your Name"/>
+									<input type="text" class="form-control" name="Name" id="Name"  placeholder="Enter your Name"/>
 								</div>
 							</div>
 						</div>
 
 						<div class="form-group">
-							<label for="email" class="cols-sm-2 control-label">Your Email</label>
+							<label for="Email_address" class="cols-sm-2 control-label">Your Email</label>
 							<div class="cols-sm-10">
 								<div class="input-group">
 									<span class="input-group-addon"><i class="fa fa-envelope fa" aria-hidden="true"></i></span>
-									<input type="text" class="form-control" name="email" id="email"  placeholder="Enter your Email"/>
+									<input type="text" class="form-control" name="Email_address" id="email"  placeholder="Enter your Email"/>
 								</div>
 							</div>
 						</div>
 
 						<div class="form-group">
-							<label for="username" class="cols-sm-2 control-label">Username</label>
+							<label for="Username" class="cols-sm-2 control-label">Username</label>
 							<div class="cols-sm-10">
 								<div class="input-group">
 									<span class="input-group-addon"><i class="fa fa-users fa" aria-hidden="true"></i></span>
-									<input type="text" class="form-control" name="username" id="username"  placeholder="Enter your Username"/>
+									<input type="text" class="form-control" name="Username" id="Username"  placeholder="Enter your Username"/>
 								</div>
 							</div>
 						</div>
 
 						<div class="form-group">
-							<label for="password" class="cols-sm-2 control-label">Password</label>
+							<label for="Password" class="cols-sm-2 control-label">Password</label>
 							<div class="cols-sm-10">
 								<div class="input-group">
 									<span class="input-group-addon"><i class="fa fa-lock fa-lg" aria-hidden="true"></i></span>
-									<input type="password" class="form-control" name="password" id="password"  placeholder="Enter your Password"/>
+									<input type="Password" class="form-control" name="Password" id="Password"  placeholder="Enter your Password"/>
 								</div>
 							</div>
 						</div>
 
 						<div class="form-group">
-							<label for="confirm" class="cols-sm-2 control-label">Confirm Password</label>
+							<label for="ConfirmPassword" class="cols-sm-2 control-label">Confirm Password</label>
 							<div class="cols-sm-10">
 								<div class="input-group">
 									<span class="input-group-addon"><i class="fa fa-lock fa-lg" aria-hidden="true"></i></span>
-									<input type="password" class="form-control" name="confirm" id="confirm"  placeholder="Confirm your Password"/>
+									<input type="ConfirmPassword" class="form-control" name="ConfirmPassword" id="ConfirmPassword"  placeholder="Confirm your Password"/>
 								</div>
 							</div>
 						</div>
 
 						<div class="form-group ">
-							<a href="userprofilepage.php" target="_blank" type="button" id="button" class="btn btn-primary btn-lg btn-block login-button">Register</a> <!--Link to database -->
+							<a target="_blank" type="submit" name="submit" id="button" class="btn btn-primary btn-lg btn-block login-button">Register</a> <!--Link to database -->
 						</div>
 						
 					</form>
@@ -150,57 +189,3 @@ include("dbConnect.php");
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="js/bootstrap.min.js"></script>
 	</body>
-</html>
-
-<?php
-
-session_start();
-
-try{
-	
-	$con - new PDO ("mysql:host=$ost_name;;dbname=$database","root","");
-	
-	if(isset($_POST['Register'])){
-		
-		$Name = $_POST['Name'];
-		$Email_address = $_POST['Email_address'];
-		$Username = $_POST['Username'];
-		$Password = $_POST ['Password'];
-		$ConfirmPassword = $_POST ['ConfirmPassword'];
-		
-		$insert = $con->prepare("INSERT INTO Users (Name,Email_address,Username,Password,ConfirmPassword)
-		values(:Name,:Email_address,:Username,:Password,:ConfirmPassword) ");
-		$insert->bindParam(':Name',$name);
-		$insert->bindParam('Email_address',$Email_address);
-		$insert->bindParam('Username',$Username);
-		$insert->bindParam('Password',$Password);
-		$insert->bindParam('ConfirmPassword',$ConfirmPassword);
-		$insert->execute();
-		}elseif(isset($_POST['signin'])){
-			$Email_address = $_POST['Email_address'];
-			$Password = $_POST['Password'];
-			
-			$select = $con->prepare("SELECT * FROM users WHERE email='$email' and Password='$Password'");
-			$select->setFetchMode(PDO::FETCH_ASSOC);
-			$select->execute();
-			$data=$select->fetch();
-			if($data['Email_address']!=$Email_address and $data['Password']!=$pass)
-			{
-				echo "invalid email or passsword";
-			}
-			elseif($data['Email_address']==$Email_address and $data['Password']==$Password)
-			{
-				$_SESSION['Email_address']=$data['Email_address'];
-				$_SESSION['Name']=$data['Name'];
-				header("location:profile.php");
-			}
-		}
-}
-catch(PDOException $e)
-{
-	echo "error".$e->getMessage();
-}
-?>
-	
-
-
