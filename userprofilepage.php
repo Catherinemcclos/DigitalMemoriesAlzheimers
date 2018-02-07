@@ -1,4 +1,25 @@
 <!DOCTYPE html>
+
+
+<?php
+ session_start();
+$stmt=$conn->query('SELECT Username FROM Users');
+ 
+ while($name=$stmt->fetch(PDO::FETCH_ASSOC)){
+ $Username = $name['Username'];
+ 
+ //var_dump($name);
+ }
+?>
+
+<h2> Welcome to your Digital Memories Archive <? echo $Username?>!</h2>
+<p></p>
+
+<?php
+include("dbConnect.php");
+?>
+
+
 <html lang="en">
 
 <head>

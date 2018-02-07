@@ -1,20 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head> 
-		<meta name="viewport" content="width=device-width, initial-scale=1">
+<?php
+session_start();
+   //unset($_SESSION["currentUser"]);
+   //unset($_SESSION["currentUserID"]);
+   var_dump($_POST);
+		if (isset($_POST)) {
+			
+			
+	
+			$formUser=$_POST["Username"];
+			var_dump('xxxxxxxxxxxxxxxxx');
+			$formPass=$_POST["Password"];
 
-
-		<!-- Website CSS style -->
-		<link href="U:\finalYear\Project\Digital Memories for Alzheimers\logStyleSheet.css" rel="stylesheet">
-
-		<!-- Website Font style -->
-	    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
-		<link rel="stylesheet" href="style.css">
-		<!-- Google Fonts -->
-		<link href='https://fonts.googleapis.com/css?family=Passion+One' rel='stylesheet' type='text/css'>
-		<link href='https://fonts.googleapis.com/css?family=Oxygen' rel='stylesheet' type='text/css'>
+			include("dbConnect.php");
 		
-		 <meta charset="utf-8">
+			$dbQuery=$conn->prepare("select * from Users where Username=:formUser"); 
+			$dbParams=array('formUser'=>$formUser);
+			$dbQuery->execute($dbParams);
+			$dbRow = $dbQuery->fetch(PDO::FETCH_ASSOC);
+			
+			print_r($dbRow);
+			
+			
+			var_dump('SELECTED VALUES');
+			if ($dbRow["Username"]==$formUser) {       
+				if ($dbRow["Password"]==$formPass) {
+					$_SESSION["currentUser"]=$formUser;
+					$_SESSION["currentUserID"]=$dbRow["User_ID"];
+					var_dump("TRUE");
+					header("Location: userprofilepage.php");
+				}
+				else {
+					var_dump("FALSE");
+					header("Location: signIn.php?failCode=2");
+				}
+			} else {
+				header("Location: signIn.php?failCode=1");
+			}
+
+		}
+?>
+<html lang="en">
+<head> 
+  <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
@@ -34,7 +61,10 @@
     Author URL: https://bootstrapmade.com
   ======================================================= -->
 
-		<title>Sign In</title>
+
+
+ <body>
+ <header id="signIn">
 		
 		 <nav class="navbar navbar-fixed-top" role="banner">
       <div class="container">
@@ -55,44 +85,46 @@
       <!--/.container-->
     </nav>
     <!--/nav-->
-	</head>
-	<body>
-		<div class="container">
+	</header>
+	
+	
+	<div class="container">
 			<div class="row main">
 				<div class="main-login main-center">
 				<h5>Sign in to account <h5>
-					<form class="" method="post" action="#">
-						<div class="form-group">
-							<label for="username" class="cols-sm-2 control-label">Username</label>
-							<div class="cols-sm-10">
-								<div class="input-group">
-									<span class="input-group-addon"><i class="fa fa-users fa" aria-hidden="true"></i></span>
-									<input type="text" class="form-control" name="username" id="username"  placeholder="Enter your Username"/>
-								</div>
-							</div>
-						</div>
+				
+				<?php
+   if (isset($_GET["failCode"])) {
+      if ($_GET["failCode"]==1)
+         echo "<h3>Incorrect Username entered</h3>";
+      if ($_GET["failCode"]==2)
+         echo "<h3>Incorrect Password entered</h3>";
+   }      
+?>  
+							<form id='login' action='<?php echo($_SERVER['PHP_SELF']) ?>' method='post' accept-charset='UTF-8'>
+<fieldset >
+<legend>Login</legend>
 
-						<div class="form-group">
-							<label for="password" class="cols-sm-2 control-label">Password</label>
-							<div class="cols-sm-10">
-								<div class="input-group">
-									<span class="input-group-addon"><i class="fa fa-lock fa-lg" aria-hidden="true"></i></span>
-									<input type="password" class="form-control" name="password" id="password"  placeholder="Enter your Password"/>
-								</div>
-							</div>
-						</div>
-						<div class="form-group ">
-							<a href="http://deepak646.blogspot.in" target="_blank" type="button" id="button" class="btn btn-primary btn-lg btn-block login-button">Register</a>
+<label for='username' >UserName*:</label>
+<input type='text' name='Username' id='Username'  maxlength="50" />
+
+<label for='password' >Password*:</label>
+<input type='password' name='Password' id='Password' maxlength="50" />
+
+<input type='submit' name='Submit' value='Submit' />
+
+</fieldset>
+</form>
 						</div>
 						
 					</form>
 				</div>
 			</div>
 		</div>
+  <h3></h3>
+  <p></p>
+</div>
 
-		 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="js/bootstrap.min.js"></script>
-	</body>
+</body>
 </html>
+</head>
