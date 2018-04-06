@@ -1,0 +1,45 @@
+<?php
+
+session_start();
+
+if (isset ($_POST['submit'])) {
+
+include 'db.Connect.php';
+
+$Username = mysqli_real_escape_string($conn, $_POST['Username']);
+$Password = mysqli_real_escape_string($conn, $_POST['Password']);
+
+//Error
+//Check if inputd are empty
+if (empty ($Username) || empty($Password)) {
+header("Location:../index.php?login=empty");
+  exit();
+} else {
+  $sql = "SELECT * FROM Users WHERE Username='$Username'";
+  $result = mysqli_query($conn, $sql);
+  $resultCheck = mysqli_num_rows)$result);
+  if ($resultCheck <1) {
+  header("Location:../index.php?login=error");
+  exit();
+  } else {
+  if ($row = myslqi_fetch_assoc($result)){
+  PasswordCheck = password_verify($Password, $row['user_Password']);
+  if ($PasswordCheck == false) {
+  header ("Location: ../index.php?login=error");
+  exit();
+  }elseif ($PasswordCheck == true){
+  //Log in the user here
+  $_SESSION['Username'] =$row[Username];
+  $_SESSION['Password'] =$row[Password];
+  header("Location: ..index.php?login=success");
+  exit();
+  }
+  }
+  }
+  }
+} else {
+head("Location: ../index.php?login=error");
+exit();
+}
+
+}

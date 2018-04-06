@@ -7,8 +7,8 @@ $password = 'password';
 try {
 	$conn = new PDO("mysql:host=$host_name;dbname=$database",$user_name,$password);
 	//set the PDO error mode to exception 
-	$conn->setAttrribute (PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-	echo "connection to MYSQL sever successfully established!";
+	$conn->setAttribute (PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	//echo "connection to MYSQL sever successfully established!";
 }
 catch(PDOException $e)
 {
