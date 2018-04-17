@@ -20,12 +20,13 @@
     Author: BootstrapMade
     Author URL: https://bootstrapmade.com
   ======================================================= -->
+</head>
 <br>
 <br>
 <br>
 <br>
 <br>
-<body> 
+<body>  
 <header id="header">
     <nav class="navbar navbar-fixed-top" role="banner">
       <div class="container">
@@ -53,13 +54,12 @@
     </div>
 </nav>
 
-  </head>
+
 </html>
 
 <?php 
 session_start();
 echo "Welcome"."".$_SESSION["name"]."<br/>";
-echo "<a href=\uploadImage.php\">Image Upload</a><br/>";
-echo "<a href=\"imageGallery.php\">Image Gallery</a><br />";
 ?>
-
+<a href="uploadImage.php">Image Upload</a><br/>
+<a href="imageGallery.php">Image Gallery</a><br />

@@ -1,20 +1,3 @@
-<?php
-require 'dbConnect.php';
-$diaryID = $_GET['diaryID'];
-$sql = 'SELECT * FROM digitalDiary WHERE diaryID=:diaryID';
-$statement = $conn->prepare($sql);
-$statement->execute([':diaryID' => $diaryID ]);
-$dairyEntry = $statement->fetch(PDO::FETCH_OBJ);
-if (isset ($_POST['diary_title'])  && isset($_POST['diaryEntry']) ) {
-  $digital_title = $_POST['diary_title'];
-  $diaryEntry = $_POST['diaryEntry'];
-  $sql = 'UPDATE digitalDiary SET digital_title=:digital_title, diaryEntry=:diaryEntry WHERE diaryID=:diaryID';
-  $statement = $conn->prepare($sql);
-  if ($statement->execute([':digital_title' => digital_title, ':diaryEntry' => $diaryEntry, ':diaryID' => diaryID])) {
-    header("Location:digitaljournalindex.php");
-  }
-}
- ?>
 <?php require 'digitaljournalheader.php'; ?>
 <div class="container">
   <div class="card mt-5">
@@ -44,4 +27,27 @@ if (isset ($_POST['diary_title'])  && isset($_POST['diaryEntry']) ) {
   </div>
 </div>
 <?php require 'footer.php'; ?>
+
+
+
+<?php
+include ("dbConnect.php");
+header("locationdigitaljournalindex.php");
+$dbQuery=$conn->prepare ("SELECT * FROM digitalDiary");
+$dbQuery->execute(); 
+$dbRow = $dbQuery -> fetch ();
+$diaryID = $dbRow ["diaryID"];
+if (isset ($_POST['diary_title']) && isset ($_POST['diaryEntry']) ) {
+	$digital_title = $_POST ['diary_title'];
+	$diaryEntry = $_POST ['diaryEntry'];
+	$dbQuery = "UPDATE digitalDiary SET digital_title=:digital_title, diaryEntry=:diaryEntry WHERE diaryID=:diaryID";
+	$statement = $conn->prepare(dbQuery);
+	if ($statement->execute([':digital_title' => digital_title, ':diaryEntry' => $diaryEntry, ':diaryID' => diaryID])) {
+		
+	}
+}
+
+?>
+ 
+
 

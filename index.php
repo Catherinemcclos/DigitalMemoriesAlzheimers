@@ -64,15 +64,15 @@
                 <h2><span>All your memories in one place!</span></h2>
               </div>
               <div class="wow fadeInUp" data-wow-offset="0" data-wow-delay="0.6s">
-                <p><i>Reminiscing digitally with photos,audio,videos and old documents</i></p>
+                <p><i>Reminisicng digitally with photos,audio,videos and old documents</i></p>
               </div>
               <div class="wow fadeInUp" data-wow-offset="0" data-wow-delay="0.9s">
                 <form class="form-inline">
                   <div class="form-group">
-                    <input type="button" onclick="location.href='http://www.digitalmemoriesalzheimers.co.uk/register.php';" value="Register" />
+                    <input type="button" onclick="location.href='register.php';" value="Register" />
                   </div>
                   <div class="form-group">
-                    <input type="button" onclick="location.href='http://www.digitalmemoriesalzheimers.co.uk/signIn.php';" value="Sign In" />
+                    <input type="button" onclick="location.href='signIn.php';" value="Sign In" />
                   </div>
                 </form>
               </div>

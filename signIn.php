@@ -1,14 +1,18 @@
 <?php
+
+//if (!isset($_SESSION["currentUser"])) 
+  //   header("Location: signIn.php");
+ 
 session_start();
-   //unset($_SESSION["currentUser"]);
-   //unset($_SESSION["currentUserID"]);
-   var_dump($_POST);
-		if (isset($_POST)) {
+   unset($_SESSION["currentUser"]);
+   unset($_SESSION["currentUserID"]);
+   //var_dump($_POST);
+		if (isset($_POST['Submit'])) {
 			
 			
 	
 			$formUser=$_POST["Username"];
-			var_dump('xxxxxxxxxxxxxxxxx');
+			//var_dump('xxxxxxxxxxxxxxxxx');
 			$formPass=$_POST["Password"];
 
 			include("dbConnect.php");
@@ -18,15 +22,15 @@ session_start();
 			$dbQuery->execute($dbParams);
 			$dbRow = $dbQuery->fetch(PDO::FETCH_ASSOC);
 			
-			print_r($dbRow);
+			//print_r($dbRow);
 			
 			
-			var_dump('SELECTED VALUES');
+			//var_dump('SELECTED VALUES');
 			if ($dbRow["Username"]==$formUser) {       
 				if ($dbRow["Password"]==$formPass) {
 					$_SESSION["currentUser"]=$formUser;
 					$_SESSION["currentUserID"]=$dbRow["User_ID"];
-					var_dump("TRUE");
+					//var_dump("TRUE");
 					header("Location: userprofilepage.php");
 				}
 				else {
@@ -34,13 +38,16 @@ session_start();
 					header("Location: signIn.php?failCode=2");
 				}
 			} else {
+				var_dump("FALSE");
 				header("Location: signIn.php?failCode=1");
 			}
 
-		}
+		} 
+else {
 ?>
 <html lang="en">
 <head> 
+
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -60,8 +67,6 @@ session_start();
     Author: BootstrapMade
     Author URL: https://bootstrapmade.com
   ======================================================= -->
-
-
 
  <body>
  <header id="signIn">
@@ -86,15 +91,28 @@ session_start();
     </nav>
     <!--/nav-->
 	</header>
+	<head> 
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <!-- Website CSS style -->
+      <link href="U:\finalYear\Project\Digital Memories for Alzheimers\signIn.css" rel="stylesheet">
+      <!-- Website Font style -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+      <link rel="stylesheet" href="style.css">
+      <!-- Google Fonts -->
+      <link href='https://fonts.googleapis.com/css?family=Passion+One' rel='stylesheet' type='text/css'>
+      <link href='https://fonts.googleapis.com/css?family=Oxygen' rel='stylesheet' type='text/css'>
+      <title>
+      </title>
+    </head>
 	
 	
 	<div class="container">
 			<div class="row main">
 				<div class="main-login main-center">
-				<h5>Sign in to account <h5>
+				<h5>Sign in to account<h5>
 				
 				<?php
-   if (isset($_GET["failCode"])) {
+  if (isset($_GET["failCode"])) {
       if ($_GET["failCode"]==1)
          echo "<h3>Incorrect Username entered</h3>";
       if ($_GET["failCode"]==2)
@@ -106,10 +124,10 @@ session_start();
 <legend>Login</legend>
 
 <label for='username' >UserName*:</label>
-<input type='text' name='Username' id='Username'  maxlength="50" />
+<input type='text' required name='Username' id='Username'  maxlength="50" />
 
 <label for='password' >Password*:</label>
-<input type='password' name='Password' id='Password' maxlength="50" />
+<input type='password' required name='Password' id='Password' maxlength="50" />
 
 <input type='submit' name='Submit' value='Submit' />
 
@@ -128,3 +146,6 @@ session_start();
 </body>
 </html>
 </head>
+<?php
+}
+?>

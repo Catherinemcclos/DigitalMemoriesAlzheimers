@@ -1,106 +1,449 @@
-<!doctype HTML>
-<html>
-	<head>
-	  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-  <title>Digital Memories Alzhiemers</title>
-
-  <!-- Bootstrap -->
-  <link href="css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/font-awesome.min.css">
-  <link rel="stylesheet" href="css/animate.css">
-  <link rel="stylesheet" href="css/overwrite.css">
-  <link href="css/animate.min.css" rel="stylesheet">
-  <link href="css/style.css" rel="stylesheet" />
-  <!-- =======================================================
-    Theme Name: Bikin
-    Theme URL: https://bootstrapmade.com/bikin-free-simple-landing-page-template/
-    Author: BootstrapMade
-    Author URL: https://bootstrapmade.com
-  ======================================================= -->
-<br>
-<br>
-<br>
-<br>
-<br>
-<body> 
-<header id="header">
-    <nav class="navbar navbar-fixed-top" role="banner">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="sr-only">Toggle navigation</span>
-          </button>
-          <a class="navbar-brand" href="index.html">Digital Memories Alzheimers</a>
-        </div>
-        <div class="collapse navbar-collapse navbar-right" id="navbar-nav">
-          <ul class="navbar-nav">
-		  <li class="nav-item">
-		  <a class="nav-link" href="userprofilepage.php">Profile</a>
-		  </li>
-		   <li class="nav-item">
-                <a class="nav-link" href="digitalphotos.php">Digital Album</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="cathDigitalJournal.php">Digital Journal</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link disabled" href="calendar.php">Calendar</a>
-            </li>
-        </ul>
-    </div>
-</nav>
-		
-	</head>
- 
- <?php
+<?php
+require 'mainHeader.html';
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 include("dbConnect.php");
 session_start();
-echo "<center><h1>Image Gallery</h1></center>";
-echo "<table border=\"2\" align=\"center\">
-<th>Image Title</th>
-<th>Image Description</th>
-<th>Image</th>";
-
-
-$sql="SELECT * FROM User_Image";
-$result = $conn->query($sql);
-
-while($row = mysqli_fetch_array($result))
-{
-	$img_Title=$row["img_title)"];
-	$img_desc=$row["img_desc)"];
-	$img_filename=$row["img_filename)"];
-	echo "<tr>
-	<td align=\"center\">";
-	echo $img_Title;
-	echo "</td>
-	<td align=\"center\">";
-	echo $img_desc;
-	echo "</td>
-	<td align=\"center\"><imgsrc='http://www.digitalmemoriesalzheimers.co.uk/Project/uploads/";
-	echo $img_filename;
-	echo " height=\"100\"
-	width=\"100\"/></td></tr>";
-	
-	echo "hello";
-   	echo $img_Title;
-}
-echo "</table>";
-//verify record is found 
-
-
-	
-//while($row= $stmt->fetch(PDO::FETCH_ASSOC);
-{
-echo "<tr><td align=\"center\">".$row["img_title"]."</td>
-<td align=\"center\">".$row["img_desc"]."</td>
-<td align=\"center\"><img
-src=http://localhost//Image/uploads/".$row["img_filename"]." height=\"100\"
-width=\"100\"/></td></tr>";
+/**
+ * Restrict access to gallery only to logged in users
+ */
+if (!isset($_SESSION["currentUser"])) {
+    header("Location: signIn.php");
+    exit();
 }
 
-echo "</table>";
+
+/**
+ * Check if we need to add user to shared users
+ */
+if(isset($_POST['share_user_id'])){
+	if(isset($_POST['action']) && $_POST['action']=='share_with'){
+        $sqlAddShare = "INSERT INTO user_gallery_shares(user_id, shared_user_id) VALUES(".$_SESSION["currentUserID"].", ".intval($_POST['share_user_id']).")";
+        //echo $sqlAddShare;
+
+        $conn->query($sqlAddShare);
+	}
+} else if(isset($_GET['share_user_id'])){
+    if(isset($_GET['action']) && $_GET['action']=='remove_share'){
+        $sqlRemoveShare = "DELETE FROM user_gallery_shares where user_id =".$_SESSION["currentUserID"]." and  shared_user_id=".intval($_GET['share_user_id']);
+
+        $conn->query($sqlRemoveShare);
+    }
+}
+
+
+/**
+ * Check which gallery we need to view, owner or shared one
+ *
+ * to share gallery with other user just set link to be like this imageGallery.php?user_id=OTHER_USER_ID [example imageGallery.php?user_id=7]
+ */
+if (isset($_GET['user_id'])) {
+    $userId = $_GET['user_id'];
+
+    /**
+     * Check if user exists
+     */
+    $sql = "SELECT count(*) FROM Users WHERE User_ID =".intval($userId);
+    $resultCount = $conn->query($sql)->fetchColumn();
+
+    if ($resultCount ==0) {
+        /**
+         * Redirect user to login
+         *
+         * You can set exit message here if you want or redirect to some other place.
+         */
+        header("Location: signIn.php");
+        exit();
+    }
+
+    /**
+     * Check if user is allowed to access gallery
+     */
+    $sqlShareDWith = "SELECT count(*) FROM user_gallery_shares WHERE user_gallery_shares.shared_user_id =".$_SESSION["currentUserID"]." and user_id=".intval($userId);
+//    echo $sqlShareDWith;exit();
+
+
+    $resultSharedWithCount = $conn->query($sqlShareDWith)->fetchColumn();
+
+    if($resultSharedWithCount==0){
+        /**
+         * You can set exit message here if you want or redirect to some other place.
+         */
+        echo "Not allowed";
+        exit();
+    }
+} else {
+    $userId = $_SESSION['currentUserID'];
+}
 ?>
+<!doctype html>
+<html>
+<style>
+        body {
+            font-family: Verdana, sans-serif;
+            margin: 0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .row > .column {
+            padding: 0 8px;
+        }
+
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        .column {
+            float: left;
+            width: 25%;
+        }
+
+        /* The Modal (background) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: black;
+        }
+
+        /* Modal Content */
+        .modal-content {
+            position: relative;
+            background-color: #fefefe;
+            margin: auto;
+            padding: 0;
+            width: 90%;
+            max-width: 1200px;
+        }
+
+        /* The Close Button */
+        .close {
+            color: white;
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            font-size: 35px;
+            font-weight: bold;
+        }
+
+            .close:hover,
+            .close:focus {
+                color: #999;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+        .mySlides {
+            display: none;
+        }
+
+        .cursor {
+            cursor: pointer
+        }
+
+        /* Next & previous buttons */
+        .prev,
+        .next {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            width: auto;
+            padding: 16px;
+            margin-top: -50px;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            transition: 0.6s ease;
+            border-radius: 0 3px 3px 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Position the "next button" to the right */
+        .next {
+            right: 0;
+            border-radius: 3px 0 0 3px;
+        }
+
+            /* On hover, add a black background color with a little bit see-through */
+            .prev:hover,
+            .next:hover {
+                background-color: rgba(0, 0, 0, 0.8);
+            }
+
+        /* Number text (1/3 etc) */
+        .numbertext {
+            color: #f2f2f2;
+            font-size: 12px;
+            padding: 8px 12px;
+            position: absolute;
+            top: 0;
+        }
+
+        img {
+            margin-bottom: -4px;
+        }
+
+        .caption-container {
+            text-align: center;
+            background-color: black;
+            padding: 2px 16px;
+            color: white;
+        }
+
+        .demo {
+            opacity: 0.6;
+        }
+
+            .active,
+            .demo:hover {
+                opacity: 1;
+            }
+
+        img.hover-shadow {
+            transition: 0.3s
+        }
+
+        .hover-shadow:hover {
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)
+        }
+    </style>
+
+</head>
+<body>
+
+<body>
+
+<?php
+    echo "<center><h1>Image Gallery</h1></center>";
+    $userId = $_SESSION['currentUserID'];
+    $sql="SELECT * FROM User_Image WHERE USER_ID = 10";
+    $result = $conn->query($sql);
+    $i = 1;
+
+    foreach($result as $row){
+        $data[]= $row;
+    }
+
+    echo "<div class=\"row\">";
+
+    $i = 1;
+    foreach($data as $row)
+    {
+        $img_Title=$row["img_title"];
+        $img_filename=$row["img_filename"];
+	
+        echo "    <div class=\"column\">";
+        echo "        <img src=\"". $img_filename . "\" style=\"width:100%\" onclick=\"openModal();currentSlide(". $i .")\" class=\"hover-shadow cursor\" alt=\"". $img_Title ."\" />";
+        echo "    </div>";
+        $i++;
+    }
+    $total = $i;
+    echo "</div>";
+
+    echo "  <div id=\"myModal\" class=\"modal\">";
+    echo "        <span class=\"close cursor\" onclick=\"closeModal()\">&times;</span>";
+    echo "        <div class=\"modal-content\">";
+
+    $i = 1;
+    foreach($data as $row)
+    {
+        $img_Title=$row["img_title"];
+        $img_desc=$row["img_desc"];
+        $img_filename=$row["img_filename"];
+
+        echo "            <div class=\"mySlides\">";
+        echo "                <div class=\"numbertext\">".$i." / ".$total."</div>";
+        echo "                <img src=\"".$img_filename."\" style=\"width:100%\" />";
+        echo "            </div>";
+        $i++;
+    }
+    echo "            <a class=\"prev\" onclick=\"plusSlides(-1)\">&#10094;</a>";
+    echo "            <a class=\"next\" onclick=\"plusSlides(1)\">&#10095;</a>";
+
+    echo "            <div class=\"caption-container\">";
+    echo "                <p id=\"caption\"></p>";
+    echo "            </div>";
+
+    $i = 1;
+    foreach($data as $row)
+    {
+        $img_Title=$row["img_title"];
+        $img_filename=$row["img_filename"];
+
+        echo "            <div class=\"column\">";
+        echo "                <img class=\"demo cursor\" src=\"".$img_filename."\" style=\"width:100%\" onclick=\"currentSlide(".$i.")\" alt=\"".$img_Title."\"  />";
+        echo "            </div>";
+        $i++;
+    }
+    echo "        </div>";
+    echo "    </div>";
+
+    ?>
+
+    <script>
+        function openModal() {
+            document.getElementById('myModal').style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById('myModal').style.display = "none";
+        }
+
+        var slideIndex = 1;
+        showSlides(slideIndex);
+
+        function plusSlides(n) {
+            showSlides(slideIndex += n);
+        }
+
+        function currentSlide(n) {
+            showSlides(slideIndex = n);
+        }
+
+        function showSlides(n) {
+            var i;
+            var slides = document.getElementsByClassName("mySlides");
+            var dots = document.getElementsByClassName("demo");
+            var captionText = document.getElementById("caption");
+            if (n > slides.length) { slideIndex = 1 }
+            if (n < 1) { slideIndex = slides.length }
+            for (i = 0; i < slides.length; i++) {
+                slides[i].style.display = "none";
+            }
+            for (i = 0; i < dots.length; i++) {
+                dots[i].className = dots[i].className.replace(" active", "");
+            }
+            slides[slideIndex - 1].style.display = "block";
+            dots[slideIndex - 1].className += " active";
+            captionText.innerHTML = dots[slideIndex - 1].alt;
+        }
+    </script>
+
+</body>
+</html>
+
+<div style="clear: both;display: block"></div>
+<h1 style="text-align: center">Image Gallery</h1>
+<?php if ($userId == $_SESSION['currentUserID']): ?>
+	<div style="clear: both;position: relative;float: left;width: 100%;margin-top: 45px;">
+		<h2>Gallery shared with</h2>
+	    <?php
+	    /**
+	     * Get all users that are allowed to use this gallery
+	     */
+	    $sqlShares = "SELECT * FROM user_gallery_shares inner join Users on Users.User_ID=user_gallery_shares.shared_user_id WHERE user_gallery_shares.user_id =".intval($userId);
+	    $resultShares = $conn->query($sqlShares);
+	    ?>
+		<table>
+			<thead>
+				<th>Name</th>
+				<th>Action</th>
+			</thead>
+			<tbody>
+            <?php foreach ($resultShares as $rowShare) : ?>
+				<tr>
+					<td style="text-align: center"><?php echo $rowShare["Name"]; ?></td>
+					<td style="text-align: center">
+						<a href="?action=remove_share&share_user_id=<?php echo $rowShare["shared_user_id"]; ?>" target="_blank">
+							Remove share
+						</a>
+					</td>
+				</tr>
+            <?php endforeach; ?>
+			</tbody>
+		</table>
+		<h3>Share gallery with user:</h3>
+        <?php
+        /**
+         * Get all users to share with
+         */
+        $sqlShareUser = "SELECT * FROM Users where User_ID not in(select shared_user_id  from user_gallery_shares where user_id=".intval($userId).")";
+        $resultSharesUser = $conn->query($sqlShareUser);
+        ?>
+		<form action="imageGallery.php" method="post">
+			<label>Name</label>
+			<select name="share_user_id">
+                <?php foreach ($resultSharesUser as $rowShareUser) : ?>
+					<option value="<?php echo $rowShareUser["User_ID"]; ?>"><?php echo $rowShareUser["Name"]; ?></option>
+                <?php endforeach; ?>
+			</select>
+			<input type="hidden" name="action" value="share_with" />
+			<button type="submit">Add user</button>
+		</form>
+	</div>
+<?php endif; ?>
+
+<?php if ($userId == $_SESSION['currentUserID']): ?>
+	<div style="clear: both;position: relative;float: left;width: 100%;margin-top: 45px;">
+		<h2>Galleries shared with me</h2>
+        <?php
+        /**
+         * Get all users that are allowed to use this gallery
+         */
+        $sqlShares = "SELECT * FROM user_gallery_shares inner join Users on Users.User_ID=user_gallery_shares.shared_user_id WHERE user_gallery_shares.shared_user_id =".intval($userId);
+        $resultShares = $conn->query($sqlShares);
+        ?>
+		<table border="2" cellpadding="2">
+			<thead>
+			<th>Name</th>
+			<th>Link</th>
+			</thead>
+			<tbody>
+            <?php foreach ($resultShares as $rowShare) : ?>
+				<tr>
+					<td style="text-align: center"><?php echo $rowShare["Name"]; ?></td>
+					<td style="text-align: center">
+						<a href="imageGallery.php?user_id=<?php echo $rowShare["user_id"]; ?>" target="_blank">
+							View gallery
+						</a>
+					</td>
+				</tr>
+            <?php endforeach; ?>
+			</tbody>
+		</table>
+	</div>
+<?php endif; ?>
+
+<div style="clear: both;position: relative;float: left;width: 100%;margin-top: 45px;">
+    <?php
+    /**
+     * Get all images from gallery
+     */
+    $sql = "SELECT * FROM User_Image WHERE User_ID =".intval($userId);
+    $result = $conn->query($sql);
+    ?>
+	<table border="2" align="center">
+		<thead>
+		<th>Image Title</th>
+		<th>Image Description</th>
+		<th>Image</th>
+		</thead>
+		<tbody>
+        <?php foreach ($result as $row) : ?>
+			<tr>
+				<td style="text-align: center"><?php echo $row["img_title"]; ?></td>
+				<td style="text-align: center"><?php echo $row["img_desc"]; ?></td>
+				<td style="text-align: center">
+					<a href="uploads/<?php echo $row["img_filename"]; ?>" target="_blank">
+						<img src="uploads/<?php echo $row["img_filename"]; ?>" style="width: 100px;height: 100px"/>
+					</a>
+				</td>
+			</tr>
+        <?php endforeach; ?>
+		</tbody>
+	</table>
+</div>
+</body>
